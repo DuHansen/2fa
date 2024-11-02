@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Validação de Código de Acesso</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Insira o Código de Acesso</h1>
+        <div class="input-group">
+            <label for="codigo_acesso">Código de Acesso:</label>
+            <input type="text" id="codigo_acesso" name="codigo_acesso" required>
+        </div>
+        <button id="validarCodigo">Validar Código</button>
+        <div id="mensagem"></div>
+    </div>
+
+    <script>
+      document.getElementById('validarCodigo').addEventListener('click', async () => {
+    const codigoAcesso = document.getElementById('codigo_acesso').value;
+    const userId = localStorage.getItem('userId');
+
+    // Debugging
+    console.log('Código de Acesso:', codigoAcesso);
+    console.log('userId:', userId);
+
+    // Verificação se os valores existem
+    if (!codigoAcesso || !userId) {
+        document.getElementById('mensagem').innerText = 'userId e codigoAcesso são obrigatórios.';
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:3000/api/v1/user/validarcodigo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, codigoAcesso })// Converter userId para número
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) { // Verifica se a resposta não foi bem-sucedida
+            throw new Error(data.message || 'Erro desconhecido');
+        }
+
+        // Exibe a mensagem e processa os dados retornados
+        document.getElementById('mensagem').innerText = data.message;
+
+        // Acesso aos detalhes do código de acesso se necessário
+        console.log('Código de acesso válido:', data.accessCode);
+
+    } catch (error) {
+        console.error('Erro ao validar código:', error);
+        document.getElementById('mensagem').innerText = error.message; // Mostra mensagem de erro
+    }
+});
+
+    </script>
+</body>
+</html>
